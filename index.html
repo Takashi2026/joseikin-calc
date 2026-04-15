@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人材開発支援助成金 簡易計算ツール</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: linear-gradient(180deg, #fdfcff 0%, #f9f7ff 100%);
+    color: #2d1b4e;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 4px;
+    color: #6c3ce0;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(108,60,224,0.08);
+    border: 1px solid rgba(108,60,224,0.06);
+  }
+  .card h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .icon { font-size: 18px; }
+  .field {
+    margin-bottom: 16px;
+  }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .hint {
+    font-size: 11px;
+    color: #888;
+    font-weight: 400;
+  }
+  input[type="number"], select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    background: #fafbfc;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+  }
+  .toggle-group {
+    display: flex;
+    gap: 8px;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    background: #fafbfc;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: #555;
+  }
+  .toggle-btn.active {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, #f3eeff, #ece5ff);
+    color: #7c3aed;
+    font-weight: 600;
+  }
+  .toggle-btn:hover:not(.active) {
+    border-color: #c4b5fd;
+    background: #faf8ff;
+  }
+
+  /* Results */
+  .result-card {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed, #6d28d9);
+    border-radius: 16px;
+    padding: 24px 20px;
+    color: #fff;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 20px rgba(124,58,237,0.3);
+  }
+  .result-card h2 {
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-label {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+  .result-value {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .result-row.emphasize {
+    background: rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 4px -12px;
+  }
+  .result-row.emphasize .result-label {
+    font-weight: 600;
+    opacity: 1;
+  }
+  .result-row.emphasize .result-value {
+    font-size: 18px;
+  }
+  .result-total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid rgba(255,255,255,0.3);
+  }
+  .result-total .result-value {
+    font-size: 24px;
+  }
+  .result-note {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 8px;
+  }
+
+  /* Breakdown */
+  .breakdown {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(108,60,224,0.08);
+    border: 1px solid rgba(108,60,224,0.06);
+    margin-bottom: 16px;
+  }
+  .breakdown h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+  }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+    color: #555;
+  }
+  .breakdown-row .val { font-weight: 600; color: #333; }
+  .breakdown-row.highlight {
+    color: #dc2626;
+    font-weight: 600;
+    padding-top: 10px;
+    margin-top: 4px;
+    border-top: 1px solid #e9e2f5;
+  }
+  .breakdown-row.highlight .val { color: #dc2626; }
+
+  /* Rate table */
+  .rate-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .rate-table th, .rate-table td {
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+  }
+  .rate-table th {
+    background: #f1f3f5;
+    font-weight: 600;
+    color: #555;
+  }
+  .rate-table td { color: #333; }
+  .rate-table tr.active-row td {
+    background: #f3eeff;
+    font-weight: 600;
+    color: #7c3aed;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    margin-top: 24px;
+    padding: 0 12px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>人材開発支援助成金</h1>
+  <p class="subtitle">事業展開等リスキリング支援コース 簡易計算<br>令和8年4月8日版準拠</p>
+
+  <!-- Input -->
+  <div class="card">
+    <h2><span class="icon">1</span> 企業情報</h2>
+    <div class="field">
+      <label>企業規模</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-value="sme" onclick="setSize(this)">中小企業</button>
+        <button class="toggle-btn" data-value="large" onclick="setSize(this)">大企業</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">2</span> 研修内容</h2>
+    <div class="field">
+      <label>研修費用（税抜） <span class="hint">円</span></label>
+      <input type="number" id="costExTax" value="2500000" step="10000" oninput="syncFromExTax()">
+    </div>
+    <div class="field">
+      <label>研修費用（税込） <span class="hint">自動計算（税率10%）</span></label>
+      <input type="number" id="cost" value="2750000" step="10000" style="background:#f0f1f3;color:#333;" readonly>
+    </div>
+    <div class="field">
+      <label>受講者数 <span class="hint">人（雇用保険加入者のみ）</span></label>
+      <input type="number" id="people" value="10" min="1" oninput="calc()">
+    </div>
+    <div class="field">
+      <label>1人あたり訓練時間 <span class="hint">時間（10h以上が要件）</span></label>
+      <input type="number" id="hours" value="30" min="10" step="1" oninput="calc()">
+    </div>
+  </div>
+
+  <div class="card" id="equipCard">
+    <h2><span class="icon">3</span> 設備投資加算（中小企業のみ）</h2>
+    <div class="field">
+      <label>設備導入の有無</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-value="no" onclick="setEquip(this)">なし</button>
+        <button class="toggle-btn" data-value="yes" onclick="setEquip(this)">あり</button>
+      </div>
+    </div>
+    <div class="field" id="equipCostField" style="display:none;">
+      <label>設備導入費用（税込） <span class="hint">円（10万円以上が要件）</span></label>
+      <input type="number" id="equipCost" value="0" step="10000" oninput="calc()">
+    </div>
+    <p style="font-size:11px;color:#888;margin-top:4px;">※ 賃金要件(5%↑)または資格等手当要件(3%↑)を満たす場合に加算<br>※ 1人15万円上限、10人以上は一律150万円上限</p>
+  </div>
+
+  <!-- Results -->
+  <div class="result-card" id="results">
+    <h2>助成額シミュレーション</h2>
+    <div class="result-row emphasize">
+      <span class="result-label">経費助成（企業に支給）</span>
+      <span class="result-value" id="r-expense">--</span>
+    </div>
+    <div class="result-row emphasize">
+      <span class="result-label">賃金助成（企業に支給）</span>
+      <span class="result-value" id="r-wage">--</span>
+    </div>
+    <div class="result-row" id="r-equip-row" style="display:none;">
+      <span class="result-label">設備投資加算</span>
+      <span class="result-value" id="r-equip">--</span>
+    </div>
+    <div class="result-row result-total">
+      <span class="result-label">助成合計（概算）</span>
+      <span class="result-value" id="r-total">--</span>
+    </div>
+    <p class="result-note" id="r-note"></p>
+  </div>
+
+  <div class="breakdown" id="breakdown">
+    <h2>内訳</h2>
+    <div class="breakdown-row">
+      <span>研修費用</span>
+      <span class="val" id="b-cost">--</span>
+    </div>
+    <div class="breakdown-row">
+      <span>経費助成率</span>
+      <span class="val" id="b-rate">--</span>
+    </div>
+    <div class="breakdown-row">
+      <span>経費助成（率計算）</span>
+      <span class="val" id="b-expense-raw">--</span>
+    </div>
+    <div class="breakdown-row">
+      <span>1人あたり上限</span>
+      <span class="val" id="b-cap">--</span>
+    </div>
+    <div class="breakdown-row">
+      <span>上限合計（<span id="b-cap-count">-</span>人）</span>
+      <span class="val" id="b-cap-total">--</span>
+    </div>
+    <div class="breakdown-row">
+      <span>経費助成（上限適用後）</span>
+      <span class="val" id="b-expense-final">--</span>
+    </div>
+    <div class="breakdown-row">
+      <span>賃金助成（<span id="b-wage-rate">-</span>円/h x <span id="b-wage-hours">-</span>h x <span id="b-wage-people">-</span>人）</span>
+      <span class="val" id="b-wage">--</span>
+    </div>
+    <div class="breakdown-row" id="b-equip-row" style="display:none;">
+      <span>設備投資加算（導入費用×50%）</span>
+      <span class="val" id="b-equip">--</span>
+    </div>
+    <div class="breakdown-row highlight">
+      <span>企業実質負担（概算）</span>
+      <span class="val" id="b-burden">--</span>
+    </div>
+  </div>
+
+  <!-- Rate reference -->
+  <div class="card">
+    <h2><span class="icon">i</span> 助成率・上限額一覧</h2>
+    <table class="rate-table" id="rateTable">
+      <thead>
+        <tr>
+          <th>訓練時間</th>
+          <th>中小企業</th>
+          <th>大企業</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="3" style="font-weight:600;background:#f8f9fa;">経費助成率</td></tr>
+        <tr><td>—</td><td>75%</td><td>60%</td></tr>
+        <tr><td colspan="3" style="font-weight:600;background:#f8f9fa;">1人あたり上限額</td></tr>
+        <tr id="row-10"><td>10h〜100h未満</td><td>30万円</td><td>20万円</td></tr>
+        <tr id="row-100"><td>100h〜200h未満</td><td>40万円</td><td>25万円</td></tr>
+        <tr id="row-200"><td>200h以上</td><td>50万円</td><td>30万円</td></tr>
+        <tr><td colspan="3" style="font-weight:600;background:#f8f9fa;">賃金助成（1人1時間）</td></tr>
+        <tr><td>—</td><td>1,000円</td><td>500円</td></tr>
+        <tr><td colspan="3" style="font-weight:600;background:#f8f9fa;">設備投資加算（中小企業のみ）</td></tr>
+        <tr><td>—</td><td>導入費用の50%</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="footer">
+    ※ 本ツールは概算シミュレーションです。正式な助成額は管轄の労働局にご確認ください。<br>
+    ※ 事業展開等リスキリング支援コース（令和4年〜令和8年度末の時限措置）<br>
+    ※ 消費税込みの研修費用に対して助成率を適用（但し1人あたり上限額あり）<br>
+    ※ 1事業所1年度の支給上限: 1億円 / 1労働者1年度3回まで<br>
+    ※ 出典: 厚生労働省 令和8年4月8日版パンフレット<br>
+    合同会社 才有る者の楽園
+  </p>
+</div>
+
+<script>
+let companySize = 'sme';
+let hasEquip = false;
+
+function setSize(btn) {
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  companySize = btn.dataset.value;
+  // Hide equipment section for large companies
+  document.getElementById('equipCard').style.display = companySize === 'large' ? 'none' : '';
+  if (companySize === 'large') { hasEquip = false; document.getElementById('equipCostField').style.display = 'none'; }
+  calc();
+}
+
+function setEquip(btn) {
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  hasEquip = btn.dataset.value === 'yes';
+  document.getElementById('equipCostField').style.display = hasEquip ? '' : 'none';
+  calc();
+}
+
+function getCapPerPerson(hours, size) {
+  if (size === 'sme') {
+    if (hours >= 200) return 500000;
+    if (hours >= 100) return 400000;
+    return 300000;
+  } else {
+    if (hours >= 200) return 300000;
+    if (hours >= 100) return 250000;
+    return 200000;
+  }
+}
+
+function getExpenseRate(size) {
+  return size === 'sme' ? 0.75 : 0.60;
+}
+
+function getWageRate(size) {
+  return size === 'sme' ? 1000 : 500;
+}
+
+function fmt(n) {
+  return '¥' + Math.floor(n).toLocaleString('ja-JP');
+}
+
+function calc() {
+  const cost = parseInt(document.getElementById('cost').value) || 0;
+  const people = parseInt(document.getElementById('people').value) || 0;
+  const hours = parseInt(document.getElementById('hours').value) || 0;
+
+  if (cost <= 0 || people <= 0 || hours < 10) {
+    document.getElementById('r-expense').textContent = '--';
+    document.getElementById('r-wage').textContent = '--';
+    document.getElementById('r-total').textContent = '--';
+    document.getElementById('r-note').textContent = hours < 10 ? '※ 訓練時間は10h以上が要件です' : '';
+    return;
+  }
+
+  const rate = getExpenseRate(companySize);
+  const capPerPerson = getCapPerPerson(hours, companySize);
+  const wageRate = getWageRate(companySize);
+
+  // Expense subsidy
+  const expenseByRate = Math.floor(cost * rate);
+  const capTotal = capPerPerson * people;
+  const expenseFinal = Math.min(expenseByRate, capTotal);
+
+  // Wage subsidy
+  const wageTotal = wageRate * hours * people;
+
+  // Equipment bonus (SME only)
+  let equipBonus = 0;
+  const equipCost = parseInt(document.getElementById('equipCost').value) || 0;
+  if (hasEquip && companySize === 'sme' && equipCost >= 100000) {
+    const equipRaw = Math.floor(equipCost * 0.5);
+    // Cap: 1人15万, 10人以上は一律150万
+    const equipCap = people >= 10 ? 1500000 : people * 150000;
+    equipBonus = Math.min(equipRaw, equipCap);
+  }
+
+  // Total (capped at 100M per year)
+  const total = Math.min(expenseFinal + wageTotal + equipBonus, 100000000);
+
+  // Burden (equipment cost is separate from training cost)
+  const burden = cost - expenseFinal;
+
+  // Update results
+  document.getElementById('r-expense').textContent = fmt(expenseFinal);
+  document.getElementById('r-wage').textContent = fmt(wageTotal);
+  document.getElementById('r-equip').textContent = fmt(equipBonus);
+  document.getElementById('r-equip-row').style.display = equipBonus > 0 ? '' : 'none';
+  document.getElementById('r-total').textContent = fmt(total);
+  const notes = [];
+  if (expenseByRate > capTotal) notes.push('※ 1人あたり上限により経費助成が制限されています');
+  if (hasEquip && companySize === 'sme' && equipCost < 100000 && equipCost > 0) notes.push('※ 設備導入費用は10万円以上が要件です');
+  document.getElementById('r-note').textContent = notes.join('\n');
+
+  // Breakdown
+  document.getElementById('b-cost').textContent = fmt(cost);
+  document.getElementById('b-rate').textContent = (rate * 100) + '%';
+  document.getElementById('b-expense-raw').textContent = fmt(expenseByRate);
+  document.getElementById('b-cap').textContent = fmt(capPerPerson);
+  document.getElementById('b-cap-count').textContent = people;
+  document.getElementById('b-cap-total').textContent = fmt(capTotal);
+  document.getElementById('b-expense-final').textContent = fmt(expenseFinal);
+  document.getElementById('b-wage-rate').textContent = wageRate.toLocaleString();
+  document.getElementById('b-wage-hours').textContent = hours;
+  document.getElementById('b-wage-people').textContent = people;
+  document.getElementById('b-wage').textContent = fmt(wageTotal);
+  document.getElementById('b-equip-row').style.display = equipBonus > 0 ? '' : 'none';
+  document.getElementById('b-equip').textContent = fmt(equipBonus);
+  document.getElementById('b-burden').textContent = fmt(burden);
+
+  // Highlight active row in rate table
+  document.querySelectorAll('#row-10,#row-100,#row-200').forEach(r => r.classList.remove('active-row'));
+  if (hours >= 200) document.getElementById('row-200').classList.add('active-row');
+  else if (hours >= 100) document.getElementById('row-100').classList.add('active-row');
+  else document.getElementById('row-10').classList.add('active-row');
+}
+
+function syncFromExTax() {
+  const exTax = parseInt(document.getElementById('costExTax').value) || 0;
+  document.getElementById('cost').value = Math.floor(exTax * 1.1);
+  calc();
+}
+
+// Init
+syncFromExTax();
+</script>
+</body>
+</html>
