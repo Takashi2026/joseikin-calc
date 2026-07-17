@@ -189,6 +189,12 @@
     color: #555;
   }
   .breakdown-row .val { font-weight: 600; color: #333; }
+  .breakdown-row.sub {
+    font-size: 11px;
+    color: #999;
+    padding: 2px 0 2px 14px;
+  }
+  .breakdown-row.sub .val { font-weight: 500; color: #888; }
   .breakdown-row.highlight {
     color: #dc2626;
     font-weight: 600;
@@ -313,6 +319,10 @@
       <span>研修費用</span>
       <span class="val" id="b-cost">--</span>
     </div>
+    <div class="breakdown-row sub">
+      <span>└ 1人あたり研修費用（÷<span id="b-pp-count">-</span>人）</span>
+      <span class="val" id="b-pp-cost">--</span>
+    </div>
     <div class="breakdown-row">
       <span>経費助成率</span>
       <span class="val" id="b-rate">--</span>
@@ -333,9 +343,17 @@
       <span>経費助成（上限適用後）</span>
       <span class="val" id="b-expense-final">--</span>
     </div>
+    <div class="breakdown-row sub">
+      <span>└ 1人あたり経費助成</span>
+      <span class="val" id="b-pp-expense">--</span>
+    </div>
     <div class="breakdown-row">
       <span>賃金助成（<span id="b-wage-rate">-</span>円/h x <span id="b-wage-hours">-</span>h x <span id="b-wage-people">-</span>人）</span>
       <span class="val" id="b-wage">--</span>
+    </div>
+    <div class="breakdown-row sub">
+      <span>└ 1人あたり賃金助成</span>
+      <span class="val" id="b-pp-wage">--</span>
     </div>
     <div class="breakdown-row" id="b-equip-row" style="display:none;">
       <span>設備投資加算（導入費用×50%）</span>
@@ -345,7 +363,7 @@
       <span>研修費用の実質負担（研修費 − 経費助成）</span>
       <span class="val" id="b-burden">--</span>
     </div>
-    <p style="font-size:11px;color:#888;margin-top:8px;">※ 賃金助成は訓練時間中に支払う賃金への補填のため、研修費用の負担計算には含めていません（経費助成とは別枠の助成です）。</p>
+    <p style="font-size:11px;color:#888;margin-top:8px;">※ 賃金助成は訓練時間中に支払う賃金への補填のため、研修費用の負担計算には含めていません（経費助成とは別枠の助成です）。<br>※ 「1人あたり」は総額÷人数の参考値です（端数処理により×人数が総額と一致しない場合があります）。</p>
   </div>
 
   <!-- Rate reference -->
@@ -489,6 +507,10 @@ function calc() {
 
   // Breakdown
   document.getElementById('b-cost').textContent = fmt(cost);
+  document.getElementById('b-pp-count').textContent = people;
+  document.getElementById('b-pp-cost').textContent = fmt(Math.round(cost / people));
+  document.getElementById('b-pp-expense').textContent = fmt(Math.round(expenseFinal / people));
+  document.getElementById('b-pp-wage').textContent = fmt(wageRate * wageHours);
   document.getElementById('b-rate').textContent = (rate * 100) + '%';
   document.getElementById('b-expense-raw').textContent = fmt(expenseByRate);
   document.getElementById('b-cap').textContent = fmt(capPerPerson);
