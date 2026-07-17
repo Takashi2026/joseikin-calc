@@ -234,7 +234,7 @@
 <body>
 <div class="container">
   <h1>人材開発支援助成金</h1>
-  <p class="subtitle">事業展開等リスキリング支援コース 簡易計算<br>令和8年4月8日版準拠</p>
+  <p class="subtitle">事業展開等リスキリング支援コース 簡易計算<br>令和8年5月14日版準拠</p>
 
   <!-- Input -->
   <div class="card">
@@ -303,6 +303,7 @@
       <span class="result-label">助成合計（概算）</span>
       <span class="result-value" id="r-total">--</span>
     </div>
+    <p class="result-note">※ 経費助成は「研修費用」に、賃金助成は「訓練時間中に支払う賃金」に対する別枠の助成です。このため助成合計が研修費用を上回る場合があります。</p>
     <p class="result-note" id="r-note"></p>
   </div>
 
@@ -341,9 +342,10 @@
       <span class="val" id="b-equip">--</span>
     </div>
     <div class="breakdown-row highlight">
-      <span>企業実質負担（概算）</span>
+      <span>研修費用の実質負担（研修費 − 経費助成）</span>
       <span class="val" id="b-burden">--</span>
     </div>
+    <p style="font-size:11px;color:#888;margin-top:8px;">※ 賃金助成は訓練時間中に支払う賃金への補填のため、研修費用の負担計算には含めていません（経費助成とは別枠の助成です）。</p>
   </div>
 
   <!-- Rate reference -->
@@ -366,6 +368,8 @@
         <tr id="row-200"><td>200h以上</td><td>50万円</td><td>30万円</td></tr>
         <tr><td colspan="3" style="font-weight:600;background:#f8f9fa;">賃金助成（1人1時間）</td></tr>
         <tr><td>—</td><td>1,000円</td><td>500円</td></tr>
+        <tr><td colspan="3" style="font-weight:600;background:#f8f9fa;">賃金助成の対象時間上限（1人1訓練）</td></tr>
+        <tr><td>—</td><td colspan="2">1,200時間（専門実践教育訓練は1,600時間）</td></tr>
         <tr><td colspan="3" style="font-weight:600;background:#f8f9fa;">設備投資加算（中小企業のみ）</td></tr>
         <tr><td>—</td><td>導入費用の50%</td><td>—</td></tr>
       </tbody>
@@ -377,7 +381,8 @@
     ※ 事業展開等リスキリング支援コース（令和4年〜令和8年度末の時限措置）<br>
     ※ 消費税込みの研修費用に対して助成率を適用（但し1人あたり上限額あり）<br>
     ※ 1事業所1年度の支給上限: 1億円 / 1労働者1年度3回まで<br>
-    ※ 出典: 厚生労働省 令和8年4月8日版パンフレット<br>
+    ※ 賃金助成の対象時間: 1人1訓練あたり1,200時間が限度（専門実践教育訓練は1,600時間）<br>
+    ※ 出典: 厚生労働省 令和8年5月14日版パンフレット（詳細版）<br>
     合同会社 才有る者の楽園
   </p>
 </div>
@@ -450,8 +455,9 @@ function calc() {
   const capTotal = capPerPerson * people;
   const expenseFinal = Math.min(expenseByRate, capTotal);
 
-  // Wage subsidy
-  const wageTotal = wageRate * hours * people;
+  // Wage subsidy (対象時間は1人1訓練あたり1,200hが限度。専門実践教育訓練の1,600hは本ツールでは扱わない)
+  const wageHours = Math.min(hours, 1200);
+  const wageTotal = wageRate * wageHours * people;
 
   // Equipment bonus (SME only)
   let equipBonus = 0;
@@ -477,6 +483,7 @@ function calc() {
   document.getElementById('r-total').textContent = fmt(total);
   const notes = [];
   if (expenseByRate > capTotal) notes.push('※ 1人あたり上限により経費助成が制限されています');
+  if (hours > 1200) notes.push('※ 賃金助成の対象時間は1人1訓練あたり1,200時間が限度です');
   if (hasEquip && companySize === 'sme' && equipCost < 100000 && equipCost > 0) notes.push('※ 設備導入費用は10万円以上が要件です');
   document.getElementById('r-note').textContent = notes.join('\n');
 
@@ -489,7 +496,7 @@ function calc() {
   document.getElementById('b-cap-total').textContent = fmt(capTotal);
   document.getElementById('b-expense-final').textContent = fmt(expenseFinal);
   document.getElementById('b-wage-rate').textContent = wageRate.toLocaleString();
-  document.getElementById('b-wage-hours').textContent = hours;
+  document.getElementById('b-wage-hours').textContent = wageHours;
   document.getElementById('b-wage-people').textContent = people;
   document.getElementById('b-wage').textContent = fmt(wageTotal);
   document.getElementById('b-equip-row').style.display = equipBonus > 0 ? '' : 'none';
